@@ -4,6 +4,7 @@
 
 import importlib
 from logging import Logger
+from packaging import version
 from types import ModuleType
 from typing import List, Optional
 
@@ -55,13 +56,31 @@ def get_main_file_name(connector: Connector) -> str:
     )
 
 
-def get_entrypoint(connector: Connector) -> List[str]:
+
+def get_entrypoint(connector: Connector, logger: Logger) -> List[str]:
     main_file_name = get_main_file_name(connector)
-    return ["python", f"/airbyte/integration_code/{main_file_name}"]
+    main_file_path = f"/airbyte/integration_code/{main_file_name}"
+    
+    # Check if connector version is above the threshold
+    connector_version = version.parse(connector.base_image_version)
+    logger.info(f"Connector version: {connector_version}")
+    version_threshold = version.parse("6.5.2")
+    logger.info(f"Version threshold: {version_threshold}")
+    
+    logger.info("Is connector version above threshold?")
+    logger.info(connector_version > version_threshold)
+
+    if connector_version > version_threshold:
+        logger.info("Triggering new flow")
+        return ["source-declarative-manifest"]  # Use the installed entry point
+
+    # For older versions, use the legacy path
+    logger.info("Triggering legacy flow")
+    return ["python", main_file_path]
 
 
-def apply_airbyte_entrypoint(connector_container: Container, connector: Connector) -> Container:
-    entrypoint = get_entrypoint(connector)
+def apply_airbyte_entrypoint(connector_container: Container, connector: Connector, logger: Logger) -> Container:
+    entrypoint = get_entrypoint(connector, logger)
 
     return connector_container.with_env_variable("AIRBYTE_ENTRYPOINT", " ".join(entrypoint)).with_entrypoint(entrypoint)
 
