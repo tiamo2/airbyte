@@ -3,10 +3,8 @@
 import logging
 from unittest.mock import MagicMock
 
-import airbyte_cdk
 import pytest
 import requests
-from airbyte_cdk.test.utils.manifest_only_fixtures import components_module, connector_dir
 
 logger = logging.getLogger(__name__)
 
