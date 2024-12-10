@@ -1,12 +1,9 @@
 # Copyright (c) 2024 Airbyte, Inc., all rights reserved.
 
-import logging
 from unittest.mock import MagicMock
 
 import pytest
 import requests
-
-logger = logging.getLogger(__name__)
 
 def create_response(current_page: int, total_pages: int) -> requests.Response:
     """Helper function to create mock responses"""
@@ -30,7 +27,7 @@ def create_response(current_page: int, total_pages: int) -> requests.Response:
     ],
     ids=["First page", "Middle page", "Penultimate page", "Last page", "Single page"]
 )
-def test_page_increment(connector_dir, components_module, current_page, total_pages, expected_next_page):
+def test_page_increment(components_module, current_page, total_pages, expected_next_page):
     """Test the CustomPageIncrement pagination for various page combinations"""
 
     CustomPageIncrement = components_module.CustomPageIncrement
